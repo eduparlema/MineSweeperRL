@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 from enum import IntEnum
+from collections import deque
 
 class Minesweeper:
     """
@@ -62,8 +63,51 @@ class Minesweeper:
 
         return self.playerfield.copy()
     
-    def step():
-        pass
+    def step(self, action: int):
+        if self.done:
+            raise RuntimeError("Episode is done; call reset() to start a new one!")
+        
+        r, c = divmod(action, self.cols)
+        if not self.is_valid(r, c):
+            raise ValueError("Action index out of bounds")
+        
+        # Place mines on the first legal reveal
+        if not self.mines_placed:
+            self.place_mines((r, c))
+            self.mines_placed = True
+
+        info: dict[str, object] = {}
+
+        # Illegal action (already opened) TODO: REMOVE THIS? ONLY LET AGENT CHOOSE VALID ACTIONS?
+        if self.playerfield[r, c] != self.Tile.UNOPENED:
+            reward = self.REWARD_MINE
+            info["illegal"] = True
+            return self.playerfield.copy(), reward, self.done, info
+        
+        # Hittin a mine
+        if self.minefield[r, c] == self.Tile.MINE:
+            self.playerfield[r, c] = self.Tile.MINE
+            self.exploded = True
+            self.done = True
+            reward = self.REWARD_MINE
+            info["exploded"] = True
+            self.num_moves += 1
+            return self.playerfield.copy(), reward, self.done, info
+
+        # Safe reveal + flood-fill
+        new_clues = self.reveal(r, c)
+        reward = len(new_clues) * self.REWARD_SAFE
+        self.num_moves += 1
+
+        # Win condition - all non-mine tiles revealed
+        unopened = np.count_nonzero(self.playerfield == self.Tile.UNOPENED)
+        if unopened == self.num_mines:
+            self.done = True
+            reward += self.REWARD_WIN
+            info["win"] = True
+        
+        info["newly_revealed"] = True
+        return self.playerfield.copy(), reward, self.done, info
 
 
 
@@ -94,5 +138,32 @@ class Minesweeper:
     def is_valid(self, r, c):
         return r >= 0 and r < self.rows and c >= 0 and c < self.cols
             
+    def reveal(self, r, c):
+        """
+        Flood-fill reveal starting from r, c. If the player clicks on a tile that
+        contains a 0 (i.e., no mines around it), then it automatically reveals the
+        tiles around it.
 
+        Return list of coordinates that have been opened.
+        """
+        q = deque([r, c])
+        opened = [] # list[(int, int)]
+        while q:
+            pr, pc = q.popleft()
+            if self.playerfield[pr, pc] == self.Tile.UNOPENED:
+                continue 
+
+            self.playerfield[pr, pc] = self.minefield[pr, pc] # Show number to agent
+            opened.append((pr, pc))
+
+            # Continue flood only through zero-clue cells
+            if self.minefield[pr, pc] == 0:
+                for dr, dc in self.directions:
+                    new_r, new_c = r + dr, c + dc
+                    if self.playerfield[new_r, new_c] == self.Tile.UNOPENED:
+                        q.append((new_r, new_c))
+        return opened
+
+    def init_gui(self):
+        pass
         
