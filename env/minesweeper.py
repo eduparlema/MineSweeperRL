@@ -108,6 +108,8 @@ class Minesweeper:
             info["win"] = True
         
         info["newly_revealed"] = True
+        if self.gui:
+            self.render()
         return self.playerfield.copy(), reward, self.done, info
 
     def place_mines(self, first_click: tuple[int, int]):
@@ -158,7 +160,7 @@ class Minesweeper:
             # Continue flood only through zero-clue cells
             if self.minefield[pr, pc] == 0:
                 for dr, dc in self.directions:
-                    new_r, new_c = r + dr, c + dc
+                    new_r, new_c = pr + dr, pc + dc
                     if self.playerfield[new_r, new_c] == self.Tile.UNOPENED:
                         q.append([new_r, new_c])
         return opened
@@ -212,11 +214,12 @@ class Minesweeper:
             self.tile_dict[n] = load(str(n))
 
     def render(self):
+        print("RENDERING")
         if not self.gui:
             return
         self.gameDisplay.fill(pygame.Color("black"))
-        self.gameDisplay.blit(self.font.render(f"MOVE: {self.move_num}", True, self.font_color), (10, self.game_height + 4))
-        self.gameDisplay.blit(self.font.render(f"SCORE: {self.score}", True, self.font_color), (200, self.game_height + 4))
+        self.gameDisplay.blit(self.font.render(f"MOVE: {self.num_moves}", True, self.font_color), (10, self.game_height + 4))
+        # self.gameDisplay.blit(self.font.render(f"SCORE: {self.score}", True, self.font_color), (200, self.game_height + 4))
         if self.done:
             label = "VICTORY!" if not self.exploded else "DEFEAT!"
             color = self.victory_color if not self.exploded else self.defeat_color

@@ -12,6 +12,8 @@ while not done:
     unopened = np.flatnonzero(obs == env.Tile.UNOPENED)
     action = int(env.np_random.choice(unopened))
     obs, reward, done, _ = env.step(action)
+    env.plot_playerfield()
+    time.sleep(3)
     print(f"Action: {action}")
 
 env.plot_minefield()   # flash the full solution
