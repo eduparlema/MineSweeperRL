@@ -151,7 +151,7 @@ class Minesweeper:
         opened = [] # list[(int, int)]
         while q:
             pr, pc = q.popleft()
-            if self.playerfield[pr, pc] == self.Tile.UNOPENED:
+            if self.playerfield[pr, pc] != self.Tile.UNOPENED:
                 continue 
 
             self.playerfield[pr, pc] = self.minefield[pr, pc] # Show number to agent
@@ -161,7 +161,7 @@ class Minesweeper:
             if self.minefield[pr, pc] == 0:
                 for dr, dc in self.directions:
                     new_r, new_c = pr + dr, pc + dc
-                    if self.playerfield[new_r, new_c] == self.Tile.UNOPENED:
+                    if self.is_valid(new_r, new_c) and self.playerfield[new_r, new_c] == self.Tile.UNOPENED:
                         q.append([new_r, new_c])
         return opened
     
