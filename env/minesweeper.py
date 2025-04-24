@@ -27,16 +27,72 @@ class Minesweeper:
         self.minefield = np.zeros((num_rows, num_cols), dtype=np.int8) # Mine placement
         self.playerfield = np.full((num_rows, num_cols), self.Tile.UNOPENED, dtype=np.int8) # What the agent sees
 
-        self.move_num         = 0
+        self.num_moves         = 0
         self.exploded         = False
         self.done             = False
-        self._mines_placed    = False
+        self.mines_placed    = False
 
         # Reward constants
-        self._REWARD_SAFE = 0.1
-        self._REWARD_MINE = -1
-        self._REWARD_WIN = 1
+        self.REWARD_SAFE = 0.1
+        self.REWARD_MINE = -1
+        self.REWARD_WIN = 1
+
+        self.directions = [[-1,-1], [0,-1], [1,-1],
+                           [-1,0], [1,0],
+                           [-1,1], [0,1], [1,1]
+                           ]
 
         self.gui = visualize
         if visualize:
-            self._init_gui() # TODO: Implement this
+            self.init_gui() # TODO: Implement this
+
+    def reset(self):
+        """
+        Start a fresh episode.
+
+        This returns a copy of the player field, where every tile is unopened.
+        """
+        self.exploded = False
+        self.done = False
+        self.num_moves = 0
+        self.mines_placed = False # Mine will be added after first click
+
+        self.playerfield.fill(self.Tile.UNOPENED)
+        self.minefield.fill(0)
+
+        return self.playerfield.copy()
+    
+    def step():
+        pass
+
+
+
+    def place_mines(self, first_click: tuple[int, int]):
+        """
+        Place mines uniformly at random, excluding first_click
+        """
+        fc_flat = first_click[0] * self.cols + first_click[1]
+
+        # Get possible tiles (flat index) to place a mine
+        candidates = np.arange(self.rows * self.cols)
+        if self.first_click_safe:
+            candidates = np.delete(candidates, fc_flat)
+        
+        mine_indices = self.np_random.choice(candidates, self.num_mines, replace=False)
+        self.minefield.flat[mine_indices] = self.Tile.MINE
+
+        # Write clue numbers around the mines:
+        for idx in mine_indices:
+            # formule to flat -> x[0] * cols + x[1]
+            r, c = divmod(idx, self.cols)
+            for dr, dc in self.directions:
+                new_r = r + dr
+                new_c = c + dc
+                if self.is_valid(r, c) and self.minefield[new_r, new_c] != self.Tile.MINE:
+                    self.minefield[new_r, new_c] += 1
+
+    def is_valid(self, r, c):
+        return r >= 0 and r < self.rows and c >= 0 and c < self.cols
+            
+
+        
