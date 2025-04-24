@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from enum import IntEnum
 from collections import deque
+from typing import Dict
 
 class Minesweeper:
     """
@@ -109,8 +110,6 @@ class Minesweeper:
         info["newly_revealed"] = True
         return self.playerfield.copy(), reward, self.done, info
 
-
-
     def place_mines(self, first_click: tuple[int, int]):
         """
         Place mines uniformly at random, excluding first_click
@@ -132,7 +131,7 @@ class Minesweeper:
             for dr, dc in self.directions:
                 new_r = r + dr
                 new_c = c + dc
-                if self.is_valid(r, c) and self.minefield[new_r, new_c] != self.Tile.MINE:
+                if self.is_valid(new_r, new_c) and self.minefield[new_r, new_c] != self.Tile.MINE:
                     self.minefield[new_r, new_c] += 1
 
     def is_valid(self, r, c):
@@ -146,7 +145,7 @@ class Minesweeper:
 
         Return list of coordinates that have been opened.
         """
-        q = deque([r, c])
+        q = deque([(r, c)])
         opened = [] # list[(int, int)]
         while q:
             pr, pc = q.popleft()
@@ -161,9 +160,91 @@ class Minesweeper:
                 for dr, dc in self.directions:
                     new_r, new_c = r + dr, c + dc
                     if self.playerfield[new_r, new_c] == self.Tile.UNOPENED:
-                        q.append((new_r, new_c))
+                        q.append([new_r, new_c])
         return opened
+    
+
+    ## GUI METHODS
 
     def init_gui(self):
-        pass
+        """Initialize Pygame window, fonts and tile surfaces"""
+        pygame.init()
+        pygame.mixer.quit()
+
+        self.tile_pixels = 32 # square tiles (32 x 32 px)
+        self.game_width = self.cols * self.tile_pixels
+        self.game_height = self.rows * self.tile_pixels
+        self.ui_height = 32 # status bar
+        self.gameDisplay = pygame.display.set_mode((self.game_width, self.game_height + self.ui_height))
+        pygame.display.set_caption("Minesweeper")
+
+        self.font = pygame.font.SysFont("Segoe UI", 24)
+        self.font_color = (255, 255, 255)      # white
+        self.victory_color = (8, 212, 29)      # green
+        self.defeat_color = (255, 0, 0)        # red
+
+        self.load_tile_images()
+
+        self.selectionSurface = pygame.Surface((self.tile_pixels, self.tile_pixels))
+        self.selectionSurface.set_alpha(128)  # transparency 0–255
+        self.selectionSurface.fill((245, 245, 66))  # yellow highlight
+    
+    def load_tile_images(self):
+        """Load 32×32 px images from ./img directory for every tile type.
+        Required files:
+            hidden.jpg      → unopened tile
+            mine.jpg        → unrevealed mine tile
+            explode.jpg     → mine clicked (explosion)
+            0.jpg … 8.jpg   → clue numbers
+        """
+        self.tile_dict: Dict[int, pygame.Surface] = {}
         
+        def load(name: str) -> pygame.Surface:
+            surf = pygame.image.load(f"img/{name}.jpg").convert()
+            return pygame.transform.scale(surf, (self.tile_pixels, self.tile_pixels))
+        
+        # Basic tiles
+        self.tile_dict[self.Tile.UNOPENED] = load("hidden")
+        self.tile_dict[self.Tile.MINE] = load("mine")
+        self.tileexplode = load("explode")
+
+        for n in range(0, 9):
+            self.tile_dict[n] = load(str(n))
+
+    def render(self):
+        if not self.gui:
+            return
+        self.gameDisplay.fill(pygame.Color("black"))
+        self.gameDisplay.blit(self.font.render(f"MOVE: {self.move_num}", True, self.font_color), (10, self.game_height + 4))
+        self.gameDisplay.blit(self.font.render(f"SCORE: {self.score}", True, self.font_color), (200, self.game_height + 4))
+        if self.done:
+            label = "VICTORY!" if not self.exploded else "DEFEAT!"
+            color = self.victory_color if not self.exploded else self.defeat_color
+            self.gameDisplay.blit(self.font.render(label, True, color), (420, self.game_height + 4))
+        self.plot_playerfield()
+        pygame.display.update()
+
+
+    def plot_playerfield(self):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                val = int(self.playerfield[r, c])
+                surf = self.tile_dict.get(val, self.tile_dict[self.Tile.UNOPENED])
+                self.gameDisplay.blit(surf, (c * self.tile_pixels, r * self.tile_pixels))
+
+    def plot_minefield(self, action: int | None = None) -> None:
+        if not self.gui:
+            return
+        highlight = None
+        if action is not None and self.exploded:
+            highlight = divmod(action, self.cols)
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.minefield[r, c] == self.Tile.MINE:
+                    surf = self.tileexplode if highlight == (r, c) else self.tile_dict[self.Tile.MINE]
+                    self.gameDisplay.blit(surf, (c * self.tile_pixels, r * self.tile_pixels))
+        pygame.display.update()
+
+    def close(self):
+        if self.gui:
+            pygame.quit()
