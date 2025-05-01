@@ -36,8 +36,8 @@ class Minesweeper:
 
         # Reward constants
         self.REWARD_SAFE = 0.1
-        self.REWARD_MINE = -1
-        self.REWARD_WIN = 1
+        self.REWARD_MINE = -5
+        self.REWARD_WIN = 10
 
         self.directions = [[-1,-1], [0,-1], [1,-1],
                            [-1,0], [1,0],
@@ -202,7 +202,7 @@ class Minesweeper:
         self.tile_dict: Dict[int, pygame.Surface] = {}
         
         def load(name: str) -> pygame.Surface:
-            surf = pygame.image.load(f"img/{name}.jpg").convert()
+            surf = pygame.image.load(f"env/img/{name}.jpg").convert()
             return pygame.transform.scale(surf, (self.tile_pixels, self.tile_pixels))
         
         # Basic tiles
