@@ -14,7 +14,7 @@ from minesweeper import Minesweeper
 
 # PPO configuration
 config = {
-    'num_episodes': 10000,
+    'num_episodes': 20000,
     'eval_every': 50,
     'eval_episodes': 100,
     'max_resets_per_episode': 25,
@@ -29,7 +29,7 @@ config = {
 }
 
 # Environment dimensions & settings
-rows, cols, mines = 4, 4, 3
+rows, cols, mines = 8, 8, 10
 first_click_safe = True
 
 def compute_gae(rewards, values, next_values, dones, gamma, lam):
