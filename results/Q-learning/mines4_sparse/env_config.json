@@ -1,0 +1,8 @@
+{
+  "rows": 4,
+  "cols": 4,
+  "mines": 4,
+  "reward_safe": 0.0,
+  "reward_mine": -1,
+  "reward_win": 1
+}

@@ -1,0 +1,10 @@
+{
+  "num_episodes": 100000,
+  "eval_every": 100,
+  "eval_episodes": 200,
+  "alpha": 0.1,
+  "gamma": 0.99,
+  "epsilon_start": 1.0,
+  "epsilon_min": 0.1,
+  "epsilon_decay": 0.995
+}

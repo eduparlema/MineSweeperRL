@@ -1,0 +1,14 @@
+{
+  "num_episodes": 1000,
+  "eval_every": 1,
+  "eval_episodes": 100,
+  "max_resets_per_episode": 25,
+  "gamma": 0.99,
+  "lambda": 0.95,
+  "lr": 0.0001,
+  "eps_clip": 0.1,
+  "value_clip": 0.2,
+  "entropy_coef": 0.01,
+  "update_timestep": 20000,
+  "K_epochs": 4
+}

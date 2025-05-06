@@ -15,7 +15,7 @@ class Minesweeper:
         UNOPENED = 9
         # Integers 0 - 8 will represent the actual numbers (neighboring mines)
     
-    def __init__(self, num_rows, num_cols, num_mines, first_click_safe=True, visualize=False, seed=None):
+    def __init__(self, num_rows, num_cols, num_mines, first_click_safe=True, visualize=False, seed=None, reward_safe=0.1, reward_mine=-10, reward_win=10):
 
         if num_mines <= 0 or num_mines >= num_rows * num_cols:
             raise ValueError("`mine_count` must be in (0, rows*cols)")
@@ -35,9 +35,9 @@ class Minesweeper:
         self.mines_placed    = False
 
         # Reward constants
-        self.REWARD_SAFE = 0.1
-        self.REWARD_MINE = -5
-        self.REWARD_WIN = 10
+        self.REWARD_SAFE = reward_safe
+        self.REWARD_MINE = reward_mine
+        self.REWARD_WIN = reward_win
 
         self.directions = [[-1,-1], [0,-1], [1,-1],
                            [-1,0], [1,0],
@@ -46,7 +46,7 @@ class Minesweeper:
 
         self.gui = visualize
         if visualize:
-            self.init_gui() # TODO: Implement this
+            self.init_gui()
 
     def reset(self):
         """
@@ -202,7 +202,7 @@ class Minesweeper:
         self.tile_dict: Dict[int, pygame.Surface] = {}
         
         def load(name: str) -> pygame.Surface:
-            surf = pygame.image.load(f"env/img/{name}.jpg").convert()
+            surf = pygame.image.load(f"./img/{name}.jpg").convert()
             return pygame.transform.scale(surf, (self.tile_pixels, self.tile_pixels))
         
         # Basic tiles
