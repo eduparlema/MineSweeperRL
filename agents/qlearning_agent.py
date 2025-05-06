@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # Ensure the `env` folder is in Python path to import Minesweeper environment
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'env'))
-from minesweeper import Minesweeper
+from env.minesweeper import Minesweeper
 
 # Q-learning configuration
 config = {
