@@ -1,6 +1,7 @@
 README
 COMP138
 Comparing PPO and Q-Learning for Minesweeper: A Reinforcement Learning Approach
+
 Eduardo Pareja Lema, Karan Vohra, Puneet Khanna
 
 First install all the required packages:
